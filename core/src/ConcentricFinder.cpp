@@ -20,7 +20,7 @@
 
 namespace ZXing {
 
-std::optional<PointF> AverageEdgePixels(BitMatrixCursorI cur, int range, int numOfEdges)
+std::experimental::optional<PointF> AverageEdgePixels(BitMatrixCursorI cur, int range, int numOfEdges)
 {
 	PointF sum = {};
 	for (int i = 0; i < numOfEdges; ++i) {
@@ -33,7 +33,7 @@ std::optional<PointF> AverageEdgePixels(BitMatrixCursorI cur, int range, int num
 	return sum / (2 * numOfEdges);
 }
 
-std::optional<PointF> CenterOfDoubleCross(const BitMatrix& image, PointI center, int range, int numOfEdges)
+std::experimental::optional<PointF> CenterOfDoubleCross(const BitMatrix& image, PointI center, int range, int numOfEdges)
 {
 	PointF sum = {};
 	for (auto d : {PointI{0, 1}, {1, 0}, {1, 1}, {1, -1}}) {
@@ -46,7 +46,7 @@ std::optional<PointF> CenterOfDoubleCross(const BitMatrix& image, PointI center,
 	return sum / 8;
 }
 
-std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle)
+std::experimental::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle)
 {
 	BitMatrixCursorI cur(image, center, {0, 1});
 	cur.stepToEdge(nth, range);
@@ -78,7 +78,7 @@ std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int ra
 	return sum / n;
 }
 
-std::optional<PointF> CenterOfRings(const BitMatrix& image, PointI center, int range, int numOfRings)
+std::experimental::optional<PointF> CenterOfRings(const BitMatrix& image, PointI center, int range, int numOfRings)
 {
 	PointF sum = {};
 	int n = 0;
@@ -94,7 +94,7 @@ std::optional<PointF> CenterOfRings(const BitMatrix& image, PointI center, int r
 	return sum / n;
 }
 
-std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize)
+std::experimental::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize)
 {
 	auto res = CenterOfRings(image, PointI(center), range, finderPatternSize / 2);
 	if (!res || !image.get(*res))

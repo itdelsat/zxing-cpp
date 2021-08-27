@@ -41,9 +41,10 @@ BarcodeValue::value() const
 	std::vector<int> result;
 	if (!_values.empty()) {
 		int maxConfidence = std::max_element(_values.begin(), _values.end(), [](auto& l, auto& r) { return l.second < r.second; })->second;
-		for (auto [value, count] : _values)
-			if (count == maxConfidence)
-				result.push_back(value);
+		//for (auto [value, count] : _values)
+		for (auto& it : _values)
+			if (it.second == maxConfidence)
+				result.push_back(it.first);
 	}
 	return result;
 }

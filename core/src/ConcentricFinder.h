@@ -19,7 +19,7 @@
 #include "Pattern.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <optional>
+#include <experimental/optional>
 
 namespace ZXing {
 
@@ -39,17 +39,17 @@ static float CenterFromEnd(const std::array<T, N>& pattern, float end)
 }
 
 template<typename Pattern, typename Cursor>
-std::optional<Pattern> ReadSymmetricPattern(Cursor& cur, int range)
+std::experimental::optional<Pattern> ReadSymmetricPattern(Cursor& cur, int range)
 {
 	if (!cur.stepToEdge(std::tuple_size<Pattern>::value / 2 + 1, range))
-		return std::nullopt;
+		return std::experimental::nullopt;
 
 	cur.turnBack();
 	cur.step();
 
 	auto pattern = cur.template readPattern<Pattern>(range);
 	if (pattern.back() == 0)
-		return std::nullopt;
+		return std::experimental::nullopt;
 	return pattern;
 }
 
@@ -72,17 +72,21 @@ int CheckDirection(BitMatrixCursorF& cur, PointF dir, FinderPattern finderPatter
 	return Reduce(*pattern);
 }
 
-std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle = true);
+std::experimental::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle = true);
 
-std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize);
+std::experimental::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize);
 
 struct ConcentricPattern : public PointF
 {
 	int size = 0;
+public:
+    ConcentricPattern() = default;
+    ConcentricPattern(PointF point, int size) : 
+        PointF(point.x, point.y), size(size) {}
 };
 
 template <bool RELAXED_THRESHOLD = false, typename FINDER_PATTERN>
-std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image, FINDER_PATTERN finderPattern, PointF center, int range)
+std::experimental::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image, FINDER_PATTERN finderPattern, PointF center, int range)
 {
 	auto cur = BitMatrixCursorF(image, center, {});
 	int minSpread = image.width(), maxSpread = 0;

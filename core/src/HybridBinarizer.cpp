@@ -131,6 +131,11 @@ static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, 
 #endif
 }
 
+template <typename T>
+static T clamp(const T& n, const T& lower, const T& upper) {
+  return std::max(lower, std::min(n, upper));
+}
+
 /**
 * For each block in the image, calculate the average black point using a 5x5 grid
 * of the blocks around it. Also handles the corner cases (fractional blocks are computed based
@@ -145,8 +150,10 @@ static std::shared_ptr<BitMatrix> CalculateMatrix(const uint8_t* luminances, int
 		int yoffset = std::min(y * BLOCK_SIZE, height - BLOCK_SIZE);
 		for (int x = 0; x < subWidth; x++) {
 			int xoffset = std::min(x * BLOCK_SIZE, width - BLOCK_SIZE);
-			int left = std::clamp(x, 2, subWidth - 3);
-			int top = std::clamp(y, 2, subHeight - 3);
+			//int left = std::clamp(x, 2, subWidth - 3);
+			int left = clamp(x, 2, subWidth - 3);
+			//int top = std::clamp(y, 2, subHeight - 3);
+			int top = clamp(y, 2, subHeight - 3);
 			int sum = 0;
 			for (int dy = -2; dy <= 2; ++dy) {
 				for (int dx = -2; dx <= 2; ++dx) {

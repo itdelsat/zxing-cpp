@@ -27,7 +27,7 @@
 #include "Point.h"
 #include "RegressionLine.h"
 #include "ResultPoint.h"
-#include "Scope.h"
+//#include "Scope.h"
 #include "WhiteRectDetector.h"
 
 #include <algorithm>
@@ -267,7 +267,8 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	// Point A and D are across the diagonal from one another,
 	// as are B and C. Figure out which are the solid black lines
 	// by counting transitions
-	std::array transitions = {
+	//std::array transitions = {
+	std::array<ResultPointsAndTransitions, 4> transitions = {
 		TransitionsBetween(image, pointA, pointB),
 		TransitionsBetween(image, pointA, pointC),
 		TransitionsBetween(image, pointB, pointD),
@@ -292,17 +293,18 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	const ResultPoint* bottomRight = nullptr;
 	const ResultPoint* bottomLeft = nullptr;
 	const ResultPoint* topLeft = nullptr;
-	for (const auto& [point, count] : pointCount) {
-		if (count == 2) {
-			bottomLeft = point; // this is definitely the bottom left, then -- end of two L sides
+	//for (const auto& [point, count] : pointCount) {
+	for (const auto& it : pointCount) {
+		if (it.second == 2) {
+			bottomLeft = it.first; // this is definitely the bottom left, then -- end of two L sides
 		}
 		else {
 			// Otherwise it's either top left or bottom right -- just assign the two arbitrarily now
 			if (bottomRight == nullptr) {
-				bottomRight = point;
+				bottomRight = it.first;
 			}
 			else {
-				topLeft = point;
+				topLeft = it.first;
 			}
 		}
 	}
@@ -646,7 +648,10 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 			continue;
 
 		PointF tl, bl, br, tr;
-		auto& [lineL, lineB, lineR, lineT] = lines;
+		//auto& [lineL, lineB, lineR, lineT] = lines;
+        DMRegressionLine lineL, lineB, lineR, lineT;
+        std::tie(lineL, lineB, lineR, lineT) = std::tuple_cat(lines);
+
 
 		for (auto& l : lines)
 			l.reset();
@@ -819,7 +824,9 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 			if (!tracer.isIn())
 				break;
 
-			if (auto res = Scan(tracer, lines); res.isValid())
+			//if (auto res = Scan(tracer, lines); res.isValid())
+			auto res = Scan(tracer, lines);
+			if (res.isValid())
 				return res;
 
 			if (!tryHarder)

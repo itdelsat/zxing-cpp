@@ -127,9 +127,15 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 				}
 
 				// Estimate the module count and ignore this set if it can not result in a valid decoding
+#if 0
 				if (auto moduleCount =
 						(std::sqrt(distAB) + std::sqrt(distBC)) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
 					moduleCount < 21 * 0.9 || moduleCount > 177 * 1.05)
+#else
+                    auto moduleCount =
+						(std::sqrt(distAB) + std::sqrt(distBC)) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
+				if (moduleCount < 21 * 0.9 || moduleCount > 177 * 1.05)
+#endif
 					continue;
 
 				// a^2 + b^2 = c^2 (Pythagorean theorem), and a = b (isosceles triangle).
@@ -159,8 +165,13 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 	// convert from multimap to vector
 	FinderPatternSets res;
 	res.reserve(sets.size());
+#if 0
 	for (auto& [d, s] : sets)
 		res.push_back(s);
+#else
+	for (auto& it : sets)
+		res.push_back(it.second);
+#endif
 	return res;
 }
 
@@ -319,11 +330,19 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	PointI tl{left, top}, tr{right, top}, bl{left, bottom};
 	Pattern diagonal;
 	// allow corners be moved one pixel inside to accomodate for possible aliasing artifacts
+#if 0
 	for (auto [p, d] : {std::pair(tl, PointI{1, 1}), {tr, {-1, 1}}, {bl, {1, -1}}}) {
 		diagonal = BitMatrixCursorI(image, p, d).readPatternFromBlack<Pattern>(1, width / 3);
 		if (!IsPattern(diagonal, PATTERN))
 			return {};
 	}
+#else
+	for (auto it : {std::pair<PointI,PointI>(tl, PointI{1, 1}), {tr, {-1, 1}}, {bl, {1, -1}}}) {
+		diagonal = BitMatrixCursorI(image, it.first, it.second).readPatternFromBlack<Pattern>(1, width / 3);
+		if (!IsPattern(diagonal, PATTERN))
+			return {};
+	}
+#endif
 
 	auto fpWidth = Reduce(diagonal);
 	auto dimension = EstimateDimension(image, tl + fpWidth / 2 * PointF(1, 1), tr + fpWidth / 2 * PointF(-1, 1)).dim;

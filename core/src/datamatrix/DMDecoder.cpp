@@ -33,7 +33,7 @@
 
 #include <algorithm>
 #include <array>
-#include <optional>
+#include <experimental/optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -224,7 +224,7 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 	return Mode::DONE;
 }
 
-std::optional<std::array<int, 3>> DecodeNextTriple(BitSource& bits)
+std::experimental::optional<std::array<int, 3>> DecodeNextTriple(BitSource& bits)
 {
 	// Values are encoded in a 16-bit value as (1600 * C1) + (40 * C2) + C3 + 1
 	// If there is less than 2 bytes left or the next byte is the unlatch codeword then the current segment has ended
@@ -520,7 +520,9 @@ DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet)
 	// * report mirrored state (see also QRReader)
 	// * unify bit mirroring helper code with QRReader?
 	// * rectangular symbols with the a size of 8 x Y are not supported a.t.m.
-	if (auto mirroredRes = DoDecode(FlippedL(bits), characterSet); mirroredRes.isValid())
+	//if (auto mirroredRes = DoDecode(FlippedL(bits), characterSet); mirroredRes.isValid())
+    auto mirroredRes = DoDecode(FlippedL(bits), characterSet);
+	if (mirroredRes.isValid())
 		return mirroredRes;
 
 	return res;
