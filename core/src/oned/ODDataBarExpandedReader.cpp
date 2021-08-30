@@ -201,16 +201,19 @@ static Pair ReadPair(const PatternView& view, Direction dir)
 }
 
 template<bool STACKED>
-static Pairs ReadRowOfPairs(const PatternView& view, int rowNumber)
+static Pairs ReadRowOfPairs(PatternView& next, int rowNumber)
 {
 	Pairs pairs;
 	Pair pair;
-	PatternView next;
 
+#if 0
+    // This function is only called with STACKED = true (ReadRowOfPairs<true>(...)), so 
+    // constexpr if statement (since c++17) is not necessary.
 	if constexpr (STACKED) {
+#endif
 		// a possible first pair is either left2right starting on a space or right2left starting on a bar.
 		// it might be a half-pair
-		next = view.subView(0, HALF_PAIR_SIZE);
+		next = next.subView(0, HALF_PAIR_SIZE);
 		while (next.shift(1)) {
 			if (IsL2RPair(next) && (pair = ReadPair(next, Direction::Right)) &&
 				(pair.finder != FINDER_A || IsGuard(next[-1], next[11])))
@@ -218,10 +221,11 @@ static Pairs ReadRowOfPairs(const PatternView& view, int rowNumber)
 			if (next.shift(1) && IsR2LPair(next) && (pair = ReadPair(next, Direction::Left)))
 				break;
 		}
+#if 0
 	} else {
 		// the only possible first pair is a full, left2right FINDER_A pair starting on a space
 		// with a guard bar on the left
-		next = view.subView(-1, FULL_PAIR_SIZE);
+		next = next.subView(-1, FULL_PAIR_SIZE);
 		while (next.shift(2)) {
 			if (IsL2RPair(next) && IsGuard(next[-1], next[11]) &&
 				(pair = ReadPair(next, Direction::Right)).finder == FINDER_A)
@@ -230,9 +234,12 @@ static Pairs ReadRowOfPairs(const PatternView& view, int rowNumber)
 		// after the first full pair, the symbol may end anytime with a half pair
 		next = next.subView(0, HALF_PAIR_SIZE);
 	}
+#endif
 
-	if (!pair)
+	if (!pair) {
+		next = {}; // if we didn't find a single pair, consume the rest of the row
 		return {};
+	}
 
 	auto flippedDir = [](Pair p) { return p.finder < 0 ? Direction::Right : Direction::Left; };
 	auto isValidPair = [](Pair p, PatternView v) { return p.right || IsGuard(v[p.finder < 0 ? 9 : 11], v[13]); };
@@ -254,7 +261,9 @@ static bool Insert(PairMap& all, Pairs&& row)
 	bool res = false;
 	for (const Pair& pair : row) {
 		auto& pairs = all[pair.finder];
-		if (auto i = Find(pairs, pair); i != pairs.end()) {
+		//if (auto i = Find(pairs, pair); i != pairs.end()) {
+		auto i = Find(pairs, pair);
+		if (i != pairs.end()) {
 			i->count++;
 			// bubble sort the pairs with the highest view count to the front so we test them first in FindValidSequence
 			while (i != pairs.begin() && i[0].count > i[-1].count) {
@@ -274,7 +283,9 @@ static bool FindValidSequence(const PairMap& all, ITER begin, ITER end, Pairs& s
 	if (begin == end)
 		return ChecksumIsValid(stack);
 
-	if (auto ppairs = all.find(*begin); ppairs != all.end()) {
+	//if (auto ppairs = all.find(*begin); ppairs != all.end()) {
+	auto ppairs = all.find(*begin);
+	if (ppairs != all.end()) {
 		// only try the N most common pairs, this means the absolute maximum number of ChecksumIsValid() evaluations
 		// is N^11 (11 is the maximum sequence length).
 		constexpr int N = 2;
@@ -333,7 +344,7 @@ struct DBERState : public RowReader::DecodingState
 	PairMap allPairs;
 };
 
-Result DataBarExpandedReader::decodePattern(int rowNumber, const PatternView& view,
+Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 											std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version

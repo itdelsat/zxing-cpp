@@ -19,6 +19,7 @@
 
 #include <iterator>
 #include <type_traits>
+#include <cstddef>
 
 namespace ZXing {
 

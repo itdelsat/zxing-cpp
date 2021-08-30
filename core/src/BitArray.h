@@ -275,9 +275,9 @@ public:
 #endif
 
 	// Little helper method to make common isRange use case more readable.
-	// Pass positive zone size to look for quite zone after i and negative for zone in front of i.
+	// Pass positive zone size to look for quiet zone after i and negative for zone in front of i.
 	// Set allowClippedZone to false if clipping the zone at the image border is not acceptable.
-	bool hasQuiteZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const {
+	bool hasQuietZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const {
 		int index = static_cast<int>(i - begin());
 		if (signedZoneSize > 0) {
 			if (!allowClippedZone && index + signedZoneSize >= size())
@@ -290,8 +290,8 @@ public:
 		}
 	}
 
-	bool hasQuiteZone(ReverseIterator i, int signedZoneSize, bool allowClippedZone = true) const {
-		return hasQuiteZone(i.base(), -signedZoneSize, allowClippedZone);
+	bool hasQuietZone(ReverseIterator i, int signedZoneSize, bool allowClippedZone = true) const {
+		return hasQuietZone(i.base(), -signedZoneSize, allowClippedZone);
 	}
 
 	/**
@@ -356,13 +356,15 @@ public:
 	}
 };
 
-template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+//template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
 T& AppendBit(T& val, bool bit)
 {
 	return (val <<= 1) |= static_cast<T>(bit);
 }
 
-template <typename ARRAY, typename = std::enable_if_t<std::is_integral_v<typename ARRAY::value_type>>>
+//template <typename ARRAY, typename = std::enable_if_t<std::is_integral_v<typename ARRAY::value_type>>>
+template <typename ARRAY, typename = typename std::enable_if<std::is_integral<typename ARRAY::value_type>::value>::type>
 int ToInt(const ARRAY& a)
 {
 	assert(Reduce(a) <= 32);
@@ -373,7 +375,8 @@ int ToInt(const ARRAY& a)
 	return pattern;
 }
 
-template <typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>>
+//template <typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <typename T = int, typename = typename std::enable_if<std::is_integral<T>::value>::type>
 T ToInt(const BitArray& bits, int pos = 0, int count = 8 * sizeof(T))
 {
 	assert(0 <= count && count <= 8 * (int)sizeof(T));
@@ -388,7 +391,8 @@ T ToInt(const BitArray& bits, int pos = 0, int count = 8 * sizeof(T))
 	return res;
 }
 
-template <typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>>
+//template <typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <typename T = int, typename = typename std::enable_if<std::is_integral<T>::value>::type>
 std::vector<T> ToInts(const BitArray& bits, int wordSize, int totalWords)
 {
 	assert(totalWords >= bits.size() / wordSize);

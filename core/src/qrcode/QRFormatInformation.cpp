@@ -88,11 +88,22 @@ FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t fo
 	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
 	for (auto mask : {0, FORMAT_INFO_MASK_QR})
 		for (uint32_t bits : {formatInfoBits1 ^ mask, formatInfoBits2 ^ mask})
+#if 0
 			for (auto& [pattern, decodedInfo] : FORMAT_INFO_DECODE_LOOKUP)
 				if (int bitsDifference = BitHacks::CountBitsSet(bits ^ pattern); bitsDifference < bestDifference) {
 					bestFormatInfo = decodedInfo;
 					bestDifference = bitsDifference;
 				}
+#else
+			for (auto& it : FORMAT_INFO_DECODE_LOOKUP)
+            {
+                int bitsDifference = BitHacks::CountBitsSet(bits ^ it[0]);
+				if (bitsDifference < bestDifference) {
+					bestFormatInfo = it[1];
+					bestDifference = bitsDifference;
+				}
+            }
+#endif
 
 	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits
 	// differing means we found a match

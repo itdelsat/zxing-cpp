@@ -149,9 +149,16 @@ int ValueForCharset(CharacterSet charset)
 	if (charset == CharacterSet::ISO8859_1) {
 		return 3;
 	}
+    /*
 	for (auto& [key, value] : ECI_VALUE_TO_CHARSET) {
 		if (value == charset) {
 			return key;
+		}
+	}
+    */
+	for (auto& it : ECI_VALUE_TO_CHARSET) {
+		if (it.second == charset) {
+			return it.first;
 		}
 	}
 	return -1;

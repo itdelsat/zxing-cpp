@@ -461,7 +461,9 @@ DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
 	if (res.isValid())
 		return res;
 
-	if (auto resMirrored = DoDecode(bits, *version, hintedCharset, true); resMirrored.isValid()) {
+	//if (auto resMirrored = DoDecode(bits, *version, hintedCharset, true); resMirrored.isValid()) {
+    auto resMirrored = DoDecode(bits, *version, hintedCharset, true);
+	if (resMirrored.isValid()) {
 		resMirrored.setExtra(std::make_shared<DecoderMetadata>(true));
 		return resMirrored;
 	}
